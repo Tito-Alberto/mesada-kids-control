@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ParentDashboard from "./pages/ParentDashboard";
 import ChildDashboard from "./pages/ChildDashboard";
 import Login from "./pages/Login";
@@ -12,20 +12,63 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+const AuthenticatedApp = () => {
+  const { user, isAuthenticated } = useAuth();
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route 
+          path="/login" 
+          element={
+            isAuthenticated ? (
+              <Navigate to={user?.type === 'parent' ? '/parent' : '/child'} replace />
+            ) : (
+              <Login />
+            )
+          } 
+        />
+        <Route 
+          path="/parent" 
+          element={
+            <ProtectedRoute>
+              <ParentDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/child" 
+          element={
+            <ProtectedRoute>
+              <ChildDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/parent" element={<ParentDashboard />} />
-          <Route path="/child" element={<ChildDashboard />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <AuthenticatedApp />
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
