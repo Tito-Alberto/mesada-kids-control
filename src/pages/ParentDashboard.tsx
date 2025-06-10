@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, Wallet, User, LogOut, Money, ArrowRight } from "lucide-react";
+import { Users, Wallet, User, LogOut, DollarSign, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const ParentDashboard = () => {
@@ -67,7 +67,7 @@ const ParentDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-secondary/20">
-                  <Money className="w-5 h-5 text-secondary" />
+                  <DollarSign className="w-5 h-5 text-secondary" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total em Saldos</p>

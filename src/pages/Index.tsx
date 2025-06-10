@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Users, Wallet, Money } from "lucide-react";
+import { Users, Wallet, DollarSign } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -71,7 +71,7 @@ const Index = () => {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-secondary/20">
-                  <Money className="w-6 h-6 text-secondary" />
+                  <DollarSign className="w-6 h-6 text-secondary" />
                 </div>
                 <div>
                   <CardTitle className="text-secondary">Para as Crianças</CardTitle>

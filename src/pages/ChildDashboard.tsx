@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { User, LogOut, Money, Wallet, ArrowRight } from "lucide-react";
+import { User, LogOut, DollarSign, Wallet, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const ChildDashboard = () => {
@@ -137,7 +137,7 @@ const ChildDashboard = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Money className="w-5 h-5" />
+                <DollarSign className="w-5 h-5" />
                 Histórico
               </CardTitle>
               <CardDescription>Suas últimas transações</CardDescription>
