@@ -8,6 +8,10 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ParentDashboard from "./pages/ParentDashboard";
 import ChildDashboard from "./pages/ChildDashboard";
 import Login from "./pages/Login";
+import RegisterParent from "./pages/RegisterParent";
+import RequestAccess from "./pages/RequestAccess";
+import AllowanceHistory from "./pages/AllowanceHistory";
+import SpendingHistory from "./pages/SpendingHistory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +42,8 @@ const AuthenticatedApp = () => {
             )
           } 
         />
+        <Route path="/register-parent" element={<RegisterParent />} />
+        <Route path="/request-access" element={<RequestAccess />} />
         <Route 
           path="/parent" 
           element={
@@ -51,6 +57,22 @@ const AuthenticatedApp = () => {
           element={
             <ProtectedRoute>
               <ChildDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/allowance-history" 
+          element={
+            <ProtectedRoute>
+              <AllowanceHistory />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/spending-history" 
+          element={
+            <ProtectedRoute>
+              <SpendingHistory />
             </ProtectedRoute>
           } 
         />

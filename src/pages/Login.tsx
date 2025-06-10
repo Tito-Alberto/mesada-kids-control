@@ -63,6 +63,14 @@ const Login = () => {
     setPassword("");
   };
 
+  const handleCreateAccount = () => {
+    if (userType === "parent") {
+      navigate("/register-parent");
+    } else {
+      navigate("/request-access");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -149,7 +157,7 @@ const Login = () => {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground mb-2">Primeiro acesso?</p>
-              <Button variant="outline" className="w-full" disabled={isLoading}>
+              <Button variant="outline" className="w-full" disabled={isLoading} onClick={handleCreateAccount}>
                 {userType === "parent" ? "Criar conta dos pais" : "Pedir acesso aos pais"}
               </Button>
             </div>

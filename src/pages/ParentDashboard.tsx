@@ -3,11 +3,13 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, Wallet, User, LogOut, DollarSign, ArrowRight } from "lucide-react";
+import { Users, Wallet, User, LogOut, DollarSign, ArrowRight, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ParentDashboard = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [children] = useState([
     { id: 1, name: "Ana", age: 8, balance: 25.50, monthlyAllowance: 15, tasksCompleted: 3, pendingRequests: 1 },
     { id: 2, name: "Pedro", age: 12, balance: 48.75, monthlyAllowance: 25, tasksCompleted: 5, pendingRequests: 0 },
@@ -20,7 +22,8 @@ const ParentDashboard = () => {
   ]);
 
   const handleLogout = () => {
-    navigate("/");
+    logout();
+    navigate("/login");
   };
 
   return (
@@ -38,10 +41,16 @@ const ParentDashboard = () => {
                 <p className="text-sm text-muted-foreground">Dashboard dos Pais</p>
               </div>
             </div>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate("/spending-history")}>
+                <FileText className="w-4 h-4 mr-2" />
+                Relatórios
+              </Button>
+              <Button variant="outline" onClick={handleLogout}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
+              </Button>
+            </div>
           </div>
         </div>
       </div>
