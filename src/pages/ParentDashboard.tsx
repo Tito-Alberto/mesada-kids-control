@@ -165,7 +165,10 @@ const ParentDashboard = () => {
                 </div>
               ))}
               
-              <Button className="w-full task-gradient text-white">
+              <Button 
+                className="w-full task-gradient text-white"
+                onClick={() => navigate("/add-child")}
+              >
                 <User className="w-4 h-4 mr-2" />
                 Adicionar Filho
               </Button>

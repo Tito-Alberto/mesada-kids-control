@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,7 @@ import AllowanceHistory from "./pages/AllowanceHistory";
 import SpendingHistory from "./pages/SpendingHistory";
 import NotFound from "./pages/NotFound";
 import ManageChild from "./pages/ManageChild";
+import AddChild from "./pages/AddChild";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +51,14 @@ const AuthenticatedApp = () => {
           element={
             <ProtectedRoute>
               <ParentDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/add-child" 
+          element={
+            <ProtectedRoute>
+              <AddChild />
             </ProtectedRoute>
           } 
         />
