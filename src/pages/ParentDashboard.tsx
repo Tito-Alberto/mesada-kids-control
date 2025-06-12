@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,14 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Wallet, User, LogOut, DollarSign, ArrowRight, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useChildren } from "@/contexts/ChildrenContext";
 
 const ParentDashboard = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
-  const [children] = useState([
-    { id: 1, name: "Ana", age: 8, balance: 25.50, monthlyAllowance: 15, tasksCompleted: 3, pendingRequests: 1 },
-    { id: 2, name: "Pedro", age: 12, balance: 48.75, monthlyAllowance: 25, tasksCompleted: 5, pendingRequests: 0 },
-  ]);
+  const { logout, user } = useAuth();
+  const { getChildrenByParent } = useChildren();
+  
+  // Get children for current parent (using user.id or default)
+  const children = getChildrenByParent(user?.id || "parent1");
 
   const [recentActivity] = useState([
     { id: 1, child: "Ana", action: "Completou tarefa", amount: 5.00, time: "2 horas atrás", type: "task" },
@@ -126,44 +126,53 @@ const ParentDashboard = () => {
               <CardDescription>Gerencie as mesadas e atividades</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {children.map((child) => (
-                <div key={child.id} className="p-4 rounded-xl border bg-gradient-to-r from-card to-muted/10 hover:shadow-md transition-all">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                        <User className="w-5 h-5 text-primary" />
+              {children.length > 0 ? (
+                children.map((child) => (
+                  <div key={child.id} className="p-4 rounded-xl border bg-gradient-to-r from-card to-muted/10 hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                          <User className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{child.name}</h3>
+                          <p className="text-sm text-muted-foreground">{child.age} anos</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold">{child.name}</h3>
-                        <p className="text-sm text-muted-foreground">{child.age} anos</p>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-success">R$ {child.balance.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">Saldo atual</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-success">R$ {child.balance.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">Saldo atual</p>
+                    
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex gap-4">
+                        <span>Mesada: R$ {child.monthlyAllowance}</span>
+                        <span>Tarefas: {child.tasksCompleted}</span>
+                      </div>
+                      {child.pendingRequests > 0 && (
+                        <Badge variant="destructive">{child.pendingRequests} solicitação</Badge>
+                      )}
                     </div>
+                    
+                    <Button 
+                      className="w-full mt-3" 
+                      variant="outline"
+                      onClick={() => navigate(`/manage-child/${child.id}`)}
+                    >
+                      Gerenciar
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
                   </div>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex gap-4">
-                      <span>Mesada: R$ {child.monthlyAllowance}</span>
-                      <span>Tarefas: {child.tasksCompleted}</span>
-                    </div>
-                    {child.pendingRequests > 0 && (
-                      <Badge variant="destructive">{child.pendingRequests} solicitação</Badge>
-                    )}
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <div className="p-4 rounded-full bg-muted/50 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <User className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  
-                  <Button 
-                    className="w-full mt-3" 
-                    variant="outline"
-                    onClick={() => navigate(`/manage-child/${child.id}`)}
-                  >
-                    Gerenciar
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                  <p className="text-muted-foreground mb-4">Nenhum filho cadastrado ainda</p>
                 </div>
-              ))}
+              )}
               
               <Button 
                 className="w-full task-gradient text-white"

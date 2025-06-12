@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,10 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { User, ArrowLeft, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useChildren } from "@/contexts/ChildrenContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AddChild = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addChild } = useChildren();
+  const { user } = useAuth();
   
   const [childData, setChildData] = useState({
     name: "",
@@ -34,8 +37,17 @@ const AddChild = () => {
     setIsLoading(true);
     
     try {
-      // Simular adição de filho
-      console.log("Dados do filho:", childData);
+      // Add child to context
+      addChild({
+        name: childData.name,
+        age: parseInt(childData.age),
+        username: childData.username,
+        password: childData.password,
+        monthlyAllowance: parseFloat(childData.monthlyAllowance),
+        parentId: user?.id || "parent1"
+      });
+      
+      console.log("Filho adicionado:", childData);
       
       // Simular delay de API
       await new Promise(resolve => setTimeout(resolve, 1000));
