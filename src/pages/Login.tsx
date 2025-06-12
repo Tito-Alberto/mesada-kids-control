@@ -30,7 +30,7 @@ const Login = () => {
       if (success) {
         toast({
           title: "Login realizado com sucesso!",
-          description: `Bem-vindo${userType === 'parent' ? '' : 'a'}, ${username}!`,
+          description: `Bem-vindo${userType === 'child' ? 'a' : ''}, ${username}!`,
         });
         
         // Navegação será automática através do AuthenticatedApp

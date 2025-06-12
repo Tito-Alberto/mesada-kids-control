@@ -6,10 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { User, LogOut, DollarSign, Wallet, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const ChildDashboard = () => {
   const navigate = useNavigate();
-  const [childData] = useState({
+  const { logout } = useAuth();
+  const { toast } = useToast();
+  
+  const [childData, setChildData] = useState({
     name: "Ana",
     balance: 25.50,
     monthlyAllowance: 15.00,
@@ -19,7 +24,7 @@ const ChildDashboard = () => {
     nextLevelXp: 500,
   });
 
-  const [availableTasks] = useState([
+  const [availableTasks, setAvailableTasks] = useState([
     { id: 1, title: "Organizar o quarto", reward: 5.00, xp: 20, difficulty: "Fácil", icon: "🛏️" },
     { id: 2, title: "Ajudar na cozinha", reward: 7.50, xp: 30, difficulty: "Médio", icon: "👨‍🍳" },
     { id: 3, title: "Estudar matemática", reward: 10.00, xp: 40, difficulty: "Médio", icon: "📚" },
@@ -32,7 +37,32 @@ const ChildDashboard = () => {
   ]);
 
   const handleLogout = () => {
-    navigate("/");
+    logout();
+    toast({
+      title: "Logout realizado!",
+      description: "Você foi desconectado com sucesso.",
+    });
+    navigate("/login");
+  };
+
+  const handleAcceptTask = (taskId: number) => {
+    const task = availableTasks.find(t => t.id === taskId);
+    if (task) {
+      // Remove a tarefa da lista de disponíveis
+      setAvailableTasks(prev => prev.filter(t => t.id !== taskId));
+      
+      // Atualiza o saldo e XP da criança
+      setChildData(prev => ({
+        ...prev,
+        balance: prev.balance + task.reward,
+        xp: prev.xp + task.xp
+      }));
+
+      toast({
+        title: "Tarefa aceita! 🎉",
+        description: `Você ganhou R$ ${task.reward.toFixed(2)} e ${task.xp} XP por "${task.title}"`,
+      });
+    }
   };
 
   const progressPercentage = (childData.xp / childData.nextLevelXp) * 100;
@@ -109,27 +139,38 @@ const ChildDashboard = () => {
               <CardDescription>Complete tarefas para ganhar dinheiro e XP!</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {availableTasks.map((task) => (
-                <div key={task.id} className="p-4 rounded-xl border bg-gradient-to-r from-card to-muted/10 hover:shadow-lg transition-all cursor-pointer">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="text-2xl">{task.icon}</div>
-                      <div>
-                        <h3 className="font-semibold">{task.title}</h3>
-                        <Badge variant="outline" className="text-xs">{task.difficulty}</Badge>
+              {availableTasks.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <span className="text-4xl mb-4 block">🎉</span>
+                  <p>Parabéns! Você completou todas as tarefas disponíveis!</p>
+                  <p className="text-sm mt-2">Novas tarefas aparecerão em breve.</p>
+                </div>
+              ) : (
+                availableTasks.map((task) => (
+                  <div key={task.id} className="p-4 rounded-xl border bg-gradient-to-r from-card to-muted/10 hover:shadow-lg transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">{task.icon}</div>
+                        <div>
+                          <h3 className="font-semibold">{task.title}</h3>
+                          <Badge variant="outline" className="text-xs">{task.difficulty}</Badge>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-success">R$ {task.reward.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">{task.xp} XP</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-success">R$ {task.reward.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">{task.xp} XP</p>
-                    </div>
+                    <Button 
+                      className="w-full task-gradient text-white"
+                      onClick={() => handleAcceptTask(task.id)}
+                    >
+                      Aceitar Tarefa
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
                   </div>
-                  <Button className="w-full task-gradient text-white">
-                    Aceitar Tarefa
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
 
@@ -175,7 +216,11 @@ const ChildDashboard = () => {
                 </div>
               ))}
               
-              <Button className="w-full" variant="outline">
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => navigate("/allowance-history")}
+              >
                 Ver Histórico Completo
               </Button>
             </CardContent>
