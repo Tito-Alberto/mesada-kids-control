@@ -235,12 +235,19 @@ const ChildDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4">
-                <Button className="money-gradient text-white p-6 h-auto flex-col gap-2">
+                <Button 
+                  className="money-gradient text-white p-6 h-auto flex-col gap-2"
+                  onClick={() => navigate("/request-money")}
+                >
                   <span className="text-2xl">💸</span>
                   <span>Pedir Dinheiro</span>
                   <span className="text-xs opacity-80">Solicitar aprovação para gastar</span>
                 </Button>
-                <Button variant="outline" className="p-6 h-auto flex-col gap-2">
+                <Button 
+                  variant="outline" 
+                  className="p-6 h-auto flex-col gap-2"
+                  onClick={() => navigate("/achievements")}
+                >
                   <span className="text-2xl">🏆</span>
                   <span>Minhas Conquistas</span>
                   <span className="text-xs opacity-60">Ver medalhas e prêmios</span>

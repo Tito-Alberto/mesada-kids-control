@@ -81,7 +81,7 @@ const Login = () => {
                 {userType === "parent" ? (
                   <Users className={`w-8 h-8 ${userType === "parent" ? "text-primary" : "text-secondary"}`} />
                 ) : (
-                  <User className={`w-8 h-8 ${userType === "parent" ? "text-primary" : "text-secondary"}`} />
+                  <User className={`w-8 h-8 ${userType === "child" ? "text-secondary" : "text-primary"}`} />
                 )}
               </div>
             </div>

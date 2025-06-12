@@ -15,6 +15,8 @@ import SpendingHistory from "./pages/SpendingHistory";
 import NotFound from "./pages/NotFound";
 import ManageChild from "./pages/ManageChild";
 import AddChild from "./pages/AddChild";
+import RequestMoney from "./pages/RequestMoney";
+import Achievements from "./pages/Achievements";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +77,22 @@ const AuthenticatedApp = () => {
           element={
             <ProtectedRoute>
               <ChildDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/request-money" 
+          element={
+            <ProtectedRoute>
+              <RequestMoney />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/achievements" 
+          element={
+            <ProtectedRoute>
+              <Achievements />
             </ProtectedRoute>
           } 
         />
