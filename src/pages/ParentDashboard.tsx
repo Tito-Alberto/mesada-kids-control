@@ -154,7 +154,11 @@ const ParentDashboard = () => {
                     )}
                   </div>
                   
-                  <Button className="w-full mt-3" variant="outline">
+                  <Button 
+                    className="w-full mt-3" 
+                    variant="outline"
+                    onClick={() => navigate(`/manage-child/${child.id}`)}
+                  >
                     Gerenciar
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>

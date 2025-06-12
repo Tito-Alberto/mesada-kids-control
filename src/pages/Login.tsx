@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,19 +56,19 @@ const Login = () => {
     }
   };
 
-  const switchUserType = (type: "parent" | "child") => {
+  function switchUserType(type: "parent" | "child") {
     setSearchParams({ type });
     setUsername("");
     setPassword("");
-  };
+  }
 
-  const handleCreateAccount = () => {
+  function handleCreateAccount() {
     if (userType === "parent") {
       navigate("/register-parent");
     } else {
       navigate("/request-access");
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
