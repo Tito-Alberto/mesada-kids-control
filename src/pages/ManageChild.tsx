@@ -9,31 +9,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, User, DollarSign, Plus, X, Check, Clock } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useChildren } from "@/contexts/ChildrenContext";
 
 const ManageChild = () => {
   const navigate = useNavigate();
   const { childId } = useParams();
   const { toast } = useToast();
+  const { 
+    getChild, 
+    updateChild, 
+    addTask, 
+    getTasksByChild, 
+    getMoneyRequestsByChild, 
+    updateMoneyRequest,
+    addBalance 
+  } = useChildren();
   
-  // Mock data - em um app real, isso viria da API baseado no childId
-  const [childData, setChildData] = useState({
-    id: 1,
-    name: "Ana",
-    age: 8,
-    balance: 25.50,
-    monthlyAllowance: 15.00,
-    tasksCompleted: 3,
-    pendingRequests: 1
-  });
-
-  const [pendingRequests, setPendingRequests] = useState([
-    { id: 1, description: "Comprar livro de colorir", amount: 12.00, date: "Hoje" },
-  ]);
-
-  const [tasks, setTasks] = useState([
-    { id: 1, title: "Organizar o quarto", reward: 5.00, status: "completed", completedAt: "Hoje" },
-    { id: 2, title: "Ajudar na cozinha", reward: 7.50, status: "pending", assignedAt: "Ontem" },
-  ]);
+  const child = getChild(parseInt(childId || "1"));
+  const childTasks = getTasksByChild(parseInt(childId || "1"));
+  const childRequests = getMoneyRequestsByChild(parseInt(childId || "1")).filter(r => r.status === 'pending');
 
   const [newTask, setNewTask] = useState({
     title: "",
@@ -42,31 +36,45 @@ const ManageChild = () => {
   });
 
   const [showAddTask, setShowAddTask] = useState(false);
+  const [balanceAmount, setBalanceAmount] = useState("");
+
+  if (!child) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p>Filho não encontrado</p>
+            <Button onClick={() => navigate("/parent")} className="mt-4">
+              Voltar
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleApproveRequest = (requestId: number) => {
-    const request = pendingRequests.find(r => r.id === requestId);
+    const request = childRequests.find(r => r.id === requestId);
     if (request) {
-      setChildData(prev => ({
-        ...prev,
-        balance: prev.balance - request.amount,
-        pendingRequests: prev.pendingRequests - 1
-      }));
+      updateChild(child.id, {
+        balance: child.balance - request.amount,
+        pendingRequests: child.pendingRequests - 1
+      });
       
-      setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+      updateMoneyRequest(requestId, { status: 'approved' });
       
       toast({
         title: "Solicitação aprovada!",
-        description: `Gasto de R$ ${request.amount.toFixed(2)} aprovado para ${childData.name}`,
+        description: `Gasto de R$ ${request.amount.toFixed(2)} aprovado para ${child.name}`,
       });
     }
   };
 
   const handleRejectRequest = (requestId: number) => {
-    setPendingRequests(prev => prev.filter(r => r.id !== requestId));
-    setChildData(prev => ({
-      ...prev,
-      pendingRequests: prev.pendingRequests - 1
-    }));
+    updateMoneyRequest(requestId, { status: 'rejected' });
+    updateChild(child.id, {
+      pendingRequests: child.pendingRequests - 1
+    });
     
     toast({
       title: "Solicitação rejeitada",
@@ -77,35 +85,46 @@ const ManageChild = () => {
 
   const handleAddTask = () => {
     if (newTask.title && newTask.reward) {
-      const task = {
-        id: Date.now(),
+      addTask({
+        childId: child.id,
         title: newTask.title,
+        description: newTask.description,
         reward: parseFloat(newTask.reward),
-        status: "pending" as const,
-        assignedAt: "Agora"
-      };
+        status: "pending"
+      });
       
-      setTasks(prev => [...prev, task]);
       setNewTask({ title: "", description: "", reward: "" });
       setShowAddTask(false);
       
       toast({
         title: "Tarefa adicionada!",
-        description: `Nova tarefa "${task.title}" foi criada para ${childData.name}`,
+        description: `Nova tarefa "${newTask.title}" foi criada para ${child.name}`,
       });
     }
   };
 
   const handleUpdateAllowance = (newAmount: number) => {
-    setChildData(prev => ({
-      ...prev,
+    updateChild(child.id, {
       monthlyAllowance: newAmount
-    }));
+    });
     
     toast({
       title: "Mesada atualizada!",
       description: `Nova mesada mensal: R$ ${newAmount.toFixed(2)}`,
     });
+  };
+
+  const handleAddBalance = () => {
+    const amount = parseFloat(balanceAmount);
+    if (amount > 0) {
+      addBalance(child.id, amount);
+      setBalanceAmount("");
+      
+      toast({
+        title: "Saldo adicionado!",
+        description: `R$ ${amount.toFixed(2)} adicionados ao saldo de ${child.name}`,
+      });
+    }
   };
 
   return (
@@ -123,8 +142,8 @@ const ManageChild = () => {
                 <User className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">Gerenciar {childData.name}</h1>
-                <p className="text-sm text-muted-foreground">{childData.age} anos</p>
+                <h1 className="text-xl font-bold">Gerenciar {child.name}</h1>
+                <p className="text-sm text-muted-foreground">{child.age} anos</p>
               </div>
             </div>
           </div>
@@ -142,7 +161,7 @@ const ManageChild = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Saldo Atual</p>
-                  <p className="text-2xl font-bold">R$ {childData.balance.toFixed(2)}</p>
+                  <p className="text-2xl font-bold">R$ {child.balance.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -156,7 +175,7 @@ const ManageChild = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mesada Mensal</p>
-                  <p className="text-2xl font-bold">R$ {childData.monthlyAllowance.toFixed(2)}</p>
+                  <p className="text-2xl font-bold">R$ {child.monthlyAllowance.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -170,7 +189,7 @@ const ManageChild = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Solicitações</p>
-                  <p className="text-2xl font-bold">{childData.pendingRequests}</p>
+                  <p className="text-2xl font-bold">{child.pendingRequests}</p>
                 </div>
               </div>
             </CardContent>
@@ -185,15 +204,17 @@ const ManageChild = () => {
               <CardDescription>Aprovações de gastos solicitadas</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {pendingRequests.length === 0 ? (
+              {childRequests.length === 0 ? (
                 <p className="text-center text-muted-foreground py-4">Nenhuma solicitação pendente</p>
               ) : (
-                pendingRequests.map((request) => (
+                childRequests.map((request) => (
                   <div key={request.id} className="p-4 rounded-lg border bg-card/50">
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <p className="font-medium">{request.description}</p>
-                        <p className="text-sm text-muted-foreground">{request.date}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
                       <p className="font-bold text-lg">R$ {request.amount.toFixed(2)}</p>
                     </div>
@@ -279,13 +300,13 @@ const ManageChild = () => {
                 </div>
               )}
 
-              {tasks.map((task) => (
+              {childTasks.map((task) => (
                 <div key={task.id} className="p-4 rounded-lg border bg-card/50">
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <p className="font-medium">{task.title}</p>
                       <p className="text-sm text-muted-foreground">
-                        {task.status === "completed" ? `Completada ${task.completedAt}` : `Atribuída ${task.assignedAt}`}
+                        {task.status === "completed" ? `Completada ${task.completedAt ? new Date(task.completedAt).toLocaleDateString() : ''}` : `Criada ${new Date(task.createdAt).toLocaleDateString()}`}
                       </p>
                     </div>
                     <div className="text-right">
@@ -301,8 +322,39 @@ const ManageChild = () => {
           </Card>
         </div>
 
-        {/* Allowance Settings */}
-        <div className="mt-8">
+        {/* Balance and Allowance Management */}
+        <div className="mt-8 grid md:grid-cols-2 gap-6">
+          {/* Add Balance */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Adicionar Saldo</CardTitle>
+              <CardDescription>Adicione dinheiro extra ao saldo do seu filho</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="balanceAmount">Valor (R$)</Label>
+                  <Input
+                    id="balanceAmount"
+                    type="number"
+                    step="0.50"
+                    value={balanceAmount}
+                    onChange={(e) => setBalanceAmount(e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+                <Button 
+                  className="money-gradient text-white self-end"
+                  onClick={handleAddBalance}
+                  disabled={!balanceAmount || parseFloat(balanceAmount) <= 0}
+                >
+                  Adicionar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Allowance Settings */}
           <Card>
             <CardHeader>
               <CardTitle>Configurações de Mesada</CardTitle>
@@ -316,7 +368,7 @@ const ManageChild = () => {
                     id="allowance"
                     type="number"
                     step="0.50"
-                    defaultValue={childData.monthlyAllowance}
+                    defaultValue={child.monthlyAllowance}
                     onBlur={(e) => {
                       const value = parseFloat(e.target.value);
                       if (value > 0) {
@@ -328,13 +380,10 @@ const ManageChild = () => {
                 <Button 
                   className="money-gradient text-white"
                   onClick={() => {
-                    setChildData(prev => ({
-                      ...prev,
-                      balance: prev.balance + prev.monthlyAllowance
-                    }));
+                    addBalance(child.id, child.monthlyAllowance);
                     toast({
                       title: "Mesada liberada!",
-                      description: `R$ ${childData.monthlyAllowance.toFixed(2)} adicionados ao saldo de ${childData.name}`,
+                      description: `R$ ${child.monthlyAllowance.toFixed(2)} adicionados ao saldo de ${child.name}`,
                     });
                   }}
                 >

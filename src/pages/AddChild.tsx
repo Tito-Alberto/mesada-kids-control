@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ const AddChild = () => {
     age: "",
     username: "",
     password: "",
+    confirmPassword: "",
     monthlyAllowance: ""
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -34,6 +36,27 @@ const AddChild = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar se as senhas coincidem
+    if (childData.password !== childData.confirmPassword) {
+      toast({
+        title: "Erro de validação",
+        description: "As senhas não coincidem. Verifique e tente novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar senha mínima
+    if (childData.password.length < 4) {
+      toast({
+        title: "Senha muito curta",
+        description: "A senha deve ter pelo menos 4 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
@@ -171,6 +194,22 @@ const AddChild = () => {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Digite a senha novamente"
+                    value={childData.confirmPassword}
+                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                  {childData.password && childData.confirmPassword && childData.password !== childData.confirmPassword && (
+                    <p className="text-sm text-destructive">As senhas não coincidem</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="allowance">Mesada mensal (R$)</Label>
                   <Input
                     id="allowance"
@@ -187,7 +226,7 @@ const AddChild = () => {
                 <Button 
                   type="submit" 
                   className="w-full task-gradient text-white"
-                  disabled={isLoading}
+                  disabled={isLoading || (childData.password && childData.confirmPassword && childData.password !== childData.confirmPassword)}
                 >
                   {isLoading ? "Adicionando..." : "Adicionar Filho"}
                 </Button>
