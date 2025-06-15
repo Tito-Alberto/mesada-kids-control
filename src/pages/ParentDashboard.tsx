@@ -1,19 +1,35 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, Wallet, User, LogOut, DollarSign, ArrowRight, FileText } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Users, Wallet, User, LogOut, DollarSign, ArrowRight, FileText, Check, X, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChildren } from "@/contexts/ChildrenContext";
+import { useToast } from "@/hooks/use-toast";
 
 const ParentDashboard = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  const { getChildrenByParent } = useChildren();
+  const { toast } = useToast();
+  const { 
+    getChildrenByParent, 
+    getMoneyRequestsByChild, 
+    updateMoneyRequest, 
+    updateChild, 
+    addBalance 
+  } = useChildren();
   
   // Get children for current parent (using user.id or default)
   const children = getChildrenByParent(user?.id || "parent1");
+  
+  // Get all pending requests for all children
+  const allPendingRequests = children.flatMap(child => 
+    getMoneyRequestsByChild(child.id).filter(r => r.status === 'pending')
+  );
 
   const [recentActivity] = useState([
     { id: 1, child: "Ana", action: "Completou tarefa", amount: 5.00, time: "2 horas atrás", type: "task" },
@@ -21,9 +37,65 @@ const ParentDashboard = () => {
     { id: 3, child: "Ana", action: "Mesada recebida", amount: 15.00, time: "3 dias atrás", type: "allowance" },
   ]);
 
+  const [balanceInputs, setBalanceInputs] = useState<{[key: number]: string}>({});
+
   const handleLogout = () => {
     logout();
     navigate("/login");
+  };
+
+  const handleApproveRequest = (requestId: number) => {
+    const request = allPendingRequests.find(r => r.id === requestId);
+    if (request) {
+      const child = children.find(c => c.id === request.childId);
+      if (child) {
+        updateChild(child.id, {
+          balance: child.balance - request.amount,
+          pendingRequests: child.pendingRequests - 1
+        });
+        
+        updateMoneyRequest(requestId, { status: 'approved' });
+        
+        toast({
+          title: "Solicitação aprovada!",
+          description: `Gasto de R$ ${request.amount.toFixed(2)} aprovado para ${child.name}`,
+        });
+      }
+    }
+  };
+
+  const handleRejectRequest = (requestId: number) => {
+    const request = allPendingRequests.find(r => r.id === requestId);
+    if (request) {
+      const child = children.find(c => c.id === request.childId);
+      if (child) {
+        updateMoneyRequest(requestId, { status: 'rejected' });
+        updateChild(child.id, {
+          pendingRequests: child.pendingRequests - 1
+        });
+        
+        toast({
+          title: "Solicitação rejeitada",
+          description: "A solicitação foi rejeitada",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleAddBalance = (childId: number) => {
+    const amount = parseFloat(balanceInputs[childId] || "0");
+    const child = children.find(c => c.id === childId);
+    
+    if (amount > 0 && child) {
+      addBalance(childId, amount);
+      setBalanceInputs(prev => ({ ...prev, [childId]: "" }));
+      
+      toast({
+        title: "Saldo adicionado!",
+        description: `R$ ${amount.toFixed(2)} adicionados ao saldo de ${child.name}`,
+      });
+    }
   };
 
   return (
@@ -116,7 +188,7 @@ const ParentDashboard = () => {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Children Overview */}
+          {/* Children Overview with Quick Balance Add */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -145,7 +217,7 @@ const ParentDashboard = () => {
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-sm mb-3">
                       <div className="flex gap-4">
                         <span>Mesada: R$ {child.monthlyAllowance}</span>
                         <span>Tarefas: {child.tasksCompleted}</span>
@@ -154,9 +226,31 @@ const ParentDashboard = () => {
                         <Badge variant="destructive">{child.pendingRequests} solicitação</Badge>
                       )}
                     </div>
+
+                    {/* Quick Add Balance */}
+                    <div className="flex gap-2 mb-3">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          step="0.50"
+                          placeholder="Valor (R$)"
+                          value={balanceInputs[child.id] || ""}
+                          onChange={(e) => setBalanceInputs(prev => ({ ...prev, [child.id]: e.target.value }))}
+                        />
+                      </div>
+                      <Button 
+                        size="sm"
+                        className="money-gradient text-white"
+                        onClick={() => handleAddBalance(child.id)}
+                        disabled={!balanceInputs[child.id] || parseFloat(balanceInputs[child.id]) <= 0}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Adicionar
+                      </Button>
+                    </div>
                     
                     <Button 
-                      className="w-full mt-3" 
+                      className="w-full" 
                       variant="outline"
                       onClick={() => navigate(`/manage-child/${child.id}`)}
                     >
@@ -184,40 +278,57 @@ const ParentDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Recent Activity */}
+          {/* Pending Requests with Quick Actions */}
           <Card>
             <CardHeader>
-              <CardTitle>Atividade Recente</CardTitle>
-              <CardDescription>Últimas transações e atividades</CardDescription>
+              <CardTitle>Solicitações Pendentes</CardTitle>
+              <CardDescription>Aprove ou rejeite gastos rapidamente</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {recentActivity.map((activity) => (
-                <div key={activity.id} className="flex items-center justify-between p-3 rounded-lg border bg-card/50">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      activity.type === "task" ? "bg-primary/20" :
-                      activity.type === "request" ? "bg-warning/20" : "bg-success/20"
-                    }`}>
-                      <span className="text-xs">
-                        {activity.type === "task" ? "🎯" : 
-                         activity.type === "request" ? "💰" : "💵"}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">{activity.child}</p>
-                      <p className="text-xs text-muted-foreground">{activity.action}</p>
-                    </div>
+              {allPendingRequests.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="p-4 rounded-full bg-muted/50 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Check className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  <div className="text-right">
-                    <p className={`font-semibold text-sm ${
-                      activity.amount > 0 ? "text-success" : "text-warning"
-                    }`}>
-                      {activity.amount > 0 ? "+" : ""}R$ {Math.abs(activity.amount).toFixed(2)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{activity.time}</p>
-                  </div>
+                  <p className="text-muted-foreground">Nenhuma solicitação pendente</p>
                 </div>
-              ))}
+              ) : (
+                allPendingRequests.map((request) => {
+                  const child = children.find(c => c.id === request.childId);
+                  return (
+                    <div key={request.id} className="p-4 rounded-lg border bg-card/50">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <p className="font-medium">{request.description}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {child?.name} • {new Date(request.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <p className="font-bold text-lg">R$ {request.amount.toFixed(2)}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          className="flex-1 bg-success hover:bg-success/80 text-white"
+                          onClick={() => handleApproveRequest(request.id)}
+                        >
+                          <Check className="w-4 h-4 mr-1" />
+                          Aprovar
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="destructive" 
+                          className="flex-1"
+                          onClick={() => handleRejectRequest(request.id)}
+                        >
+                          <X className="w-4 h-4 mr-1" />
+                          Rejeitar
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </CardContent>
           </Card>
         </div>
