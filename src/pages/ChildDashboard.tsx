@@ -4,18 +4,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { User, LogOut, DollarSign, Wallet, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { User, LogOut, DollarSign, Wallet, ArrowRight, ShoppingCart, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useChildren } from "@/contexts/ChildrenContext";
 import { useToast } from "@/hooks/use-toast";
 
 const ChildDashboard = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const { toast } = useToast();
+  const { addMoneyRequest } = useChildren();
   
   const [childData, setChildData] = useState({
     name: "Ana",
+    id: 1,
     balance: 25.50,
     monthlyAllowance: 15.00,
     nextAllowance: "5 dias",
@@ -35,6 +41,11 @@ const ChildDashboard = () => {
     { id: 2, description: "Compra: Brinquedo", amount: -12.00, date: "Ontem", type: "spent", status: "pending" },
     { id: 3, description: "Mesada mensal", amount: 15.00, date: "3 dias atrás", type: "allowance" },
   ]);
+
+  // Estados para formulário de compra
+  const [purchaseAmount, setPurchaseAmount] = useState("");
+  const [purchaseDescription, setPurchaseDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -62,6 +73,58 @@ const ChildDashboard = () => {
         title: "Tarefa aceita! 🎉",
         description: `Você ganhou R$ ${task.reward.toFixed(2)} e ${task.xp} XP por "${task.title}"`,
       });
+    }
+  };
+
+  const handlePurchaseRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const amount = parseFloat(purchaseAmount);
+      
+      if (amount <= 0) {
+        toast({
+          title: "Valor inválido",
+          description: "Por favor, insira um valor maior que zero.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (amount > childData.balance) {
+        toast({
+          title: "Saldo insuficiente",
+          description: "Você não tem saldo suficiente para esta compra.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Adicionar solicitação de compra
+      addMoneyRequest({
+        childId: childData.id,
+        amount: amount,
+        description: purchaseDescription,
+        status: 'pending'
+      });
+
+      toast({
+        title: "Solicitação enviada! 📱",
+        description: `Pedido de R$ ${amount.toFixed(2)} enviado para aprovação dos pais.`,
+      });
+
+      // Limpar formulário
+      setPurchaseAmount("");
+      setPurchaseDescription("");
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível enviar a solicitação. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -128,7 +191,7 @@ const ChildDashboard = () => {
           </Card>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8">
           {/* Available Tasks */}
           <Card>
             <CardHeader>
@@ -171,6 +234,63 @@ const ChildDashboard = () => {
                   </div>
                 ))
               )}
+            </CardContent>
+          </Card>
+
+          {/* Purchase Request Form */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5" />
+                Fazer Compra
+              </CardTitle>
+              <CardDescription>Solicite aprovação para uma compra</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handlePurchaseRequest} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="amount">Valor (R$)</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0,00"
+                    value={purchaseAmount}
+                    onChange={(e) => setPurchaseAmount(e.target.value)}
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">O que você quer comprar?</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Ex: Brinquedo, livro, lanche..."
+                    value={purchaseDescription}
+                    onChange={(e) => setPurchaseDescription(e.target.value)}
+                    required
+                    disabled={isSubmitting}
+                    rows={3}
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full money-gradient text-white"
+                  disabled={isSubmitting || !purchaseAmount || !purchaseDescription}
+                >
+                  {isSubmitting ? "Enviando..." : "Solicitar Compra"}
+                  <Plus className="w-4 h-4 ml-2" />
+                </Button>
+              </form>
+
+              <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                <p className="text-xs text-muted-foreground">
+                  💡 Dica: Sua solicitação será enviada aos seus pais para aprovação
+                </p>
+              </div>
             </CardContent>
           </Card>
 
