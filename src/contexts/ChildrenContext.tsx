@@ -1,5 +1,4 @@
-
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export interface Child {
   id: number;
@@ -62,32 +61,46 @@ export const useChildren = () => {
 };
 
 export const ChildrenProvider = ({ children }: { children: ReactNode }) => {
-  const [childrenList, setChildrenList] = useState<Child[]>([
-    { 
-      id: 1, 
-      name: "Ana", 
-      age: 8, 
-      username: "ana_user",
-      password: "ana123",
-      balance: 25.50, 
-      monthlyAllowance: 15, 
-      tasksCompleted: 3, 
-      pendingRequests: 1,
-      parentId: "parent1"
-    },
-    { 
-      id: 2, 
-      name: "Pedro", 
-      age: 12, 
-      username: "pedro_user",
-      password: "pedro123",
-      balance: 48.75, 
-      monthlyAllowance: 25, 
-      tasksCompleted: 5, 
-      pendingRequests: 0,
-      parentId: "parent1"
-    },
-  ]);
+  // Carregar dados do localStorage ou usar dados padrão
+  const loadChildrenFromStorage = () => {
+    const stored = localStorage.getItem('children');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    return [
+      { 
+        id: 1, 
+        name: "Ana", 
+        age: 8, 
+        username: "ana_user",
+        password: "ana123",
+        balance: 25.50, 
+        monthlyAllowance: 15, 
+        tasksCompleted: 3, 
+        pendingRequests: 1,
+        parentId: "parent1"
+      },
+      { 
+        id: 2, 
+        name: "Pedro", 
+        age: 12, 
+        username: "pedro_user",
+        password: "pedro123",
+        balance: 48.75, 
+        monthlyAllowance: 25, 
+        tasksCompleted: 5, 
+        pendingRequests: 0,
+        parentId: "parent1"
+      },
+    ];
+  };
+
+  const [childrenList, setChildrenList] = useState<Child[]>(loadChildrenFromStorage);
+
+  // Salvar no localStorage sempre que a lista de filhos mudar
+  useEffect(() => {
+    localStorage.setItem('children', JSON.stringify(childrenList));
+  }, [childrenList]);
 
   const [tasks, setTasks] = useState<Task[]>([
     {

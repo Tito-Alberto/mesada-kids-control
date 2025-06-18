@@ -46,10 +46,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email: username,
         };
       } else {
-        // Para filhos, usar o nome diretamente
+        // Para filhos, verificar se existem no sistema
+        const childrenData = localStorage.getItem('children');
+        const children = childrenData ? JSON.parse(childrenData) : [];
+        
+        // Procurar a criança pelo username e password
+        const childFound = children.find((child: any) => 
+          child.username === username && child.password === password
+        );
+        
+        if (!childFound) {
+          return false; // Criança não cadastrada pelos pais
+        }
+        
         userData = {
-          id: Math.random().toString(36).substr(2, 9),
-          name: username,
+          id: childFound.id.toString(),
+          name: childFound.name,
           type: userType,
         };
       }
