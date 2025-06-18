@@ -26,8 +26,9 @@ const ChildDashboard = () => {
     getMoneyRequestsByChild 
   } = useChildren();
   
-  // Pegar dados da criança logada (assumindo ID 1 por padrão ou baseado no usuário)
-  const childId = 1; // Em produção, isso viria do contexto de autenticação
+  // Usar o ID da criança logada baseado no usuário autenticado
+  // Em produção, isso deveria vir do contexto de autenticação
+  const childId = 1; // Por enquanto usar ID fixo, mas em produção usar user.id
   const child = getChild(childId);
   const childTasks = getTasksByChild(childId);
   const childRequests = getMoneyRequestsByChild(childId);
@@ -156,7 +157,7 @@ const ChildDashboard = () => {
                 <User className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">Olá, {child.name}! 👋</h1>
+                <h1 className="text-xl font-bold">Olá, {user?.name || child.name}! 👋</h1>
                 <p className="text-sm text-muted-foreground">{child.age} anos</p>
               </div>
             </div>

@@ -110,7 +110,9 @@ const ParentDashboard = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold">MesadaKids</h1>
-                <p className="text-sm text-muted-foreground">Dashboard dos Pais</p>
+                <p className="text-sm text-muted-foreground">
+                  Bem-vindo, {user?.name || 'Pai/Mãe'}
+                </p>
               </div>
             </div>
             <div className="flex gap-2">

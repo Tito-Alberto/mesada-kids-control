@@ -35,12 +35,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (username: string, password: string, userType: 'parent' | 'child'): Promise<boolean> => {
     // Simulação de login - em produção conectar com backend
     if (username && password) {
-      const userData: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: username,
-        type: userType,
-        email: userType === 'parent' ? username : undefined,
-      };
+      let userData: User;
+      
+      if (userType === 'parent') {
+        // Para pais, usar o email como nome de usuário
+        userData = {
+          id: Math.random().toString(36).substr(2, 9),
+          name: username.split('@')[0] || username, // Pega a parte antes do @ do email
+          type: userType,
+          email: username,
+        };
+      } else {
+        // Para filhos, usar o nome diretamente
+        userData = {
+          id: Math.random().toString(36).substr(2, 9),
+          name: username,
+          type: userType,
+        };
+      }
       
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
