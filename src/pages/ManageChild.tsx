@@ -127,6 +127,28 @@ const ManageChild = () => {
     }
   };
 
+  const handleReleaseAllowance = () => {
+    // Verificar se o saldo é suficiente para retirar a mesada
+    if (child.balance < child.monthlyAllowance) {
+      toast({
+        title: "Saldo insuficiente!",
+        description: `${child.name} não tem saldo suficiente. Saldo atual: R$ ${child.balance.toFixed(2)}, Mesada: R$ ${child.monthlyAllowance.toFixed(2)}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Retirar a mesada do saldo atual
+    updateChild(child.id, {
+      balance: child.balance - child.monthlyAllowance
+    });
+    
+    toast({
+      title: "Mesada liberada!",
+      description: `R$ ${child.monthlyAllowance.toFixed(2)} retirados do saldo de ${child.name}. Novo saldo: R$ ${(child.balance - child.monthlyAllowance).toFixed(2)}`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       {/* Header */}
@@ -379,13 +401,7 @@ const ManageChild = () => {
                 </div>
                 <Button 
                   className="money-gradient text-white"
-                  onClick={() => {
-                    addBalance(child.id, child.monthlyAllowance);
-                    toast({
-                      title: "Mesada liberada!",
-                      description: `R$ ${child.monthlyAllowance.toFixed(2)} adicionados ao saldo de ${child.name}`,
-                    });
-                  }}
+                  onClick={handleReleaseAllowance}
                 >
                   Liberar Mesada Agora
                 </Button>
