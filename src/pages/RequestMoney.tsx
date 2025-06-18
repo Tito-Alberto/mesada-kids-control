@@ -8,26 +8,62 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useChildren } from "@/contexts/ChildrenContext";
 
 const RequestMoney = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addMoneyRequest, updateChild, getChild } = useChildren();
   
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Em produção, pegar o ID da criança do contexto de autenticação
+  const childId = 1;
+  const child = getChild(childId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // Simular envio da solicitação
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const requestAmount = parseFloat(amount);
+      
+      if (requestAmount <= 0) {
+        toast({
+          title: "Valor inválido",
+          description: "Por favor, insira um valor maior que zero.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!child) {
+        toast({
+          title: "Erro",
+          description: "Dados do usuário não encontrados.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Adicionar solicitação de dinheiro
+      addMoneyRequest({
+        childId: child.id,
+        amount: requestAmount,
+        description: description,
+        status: 'pending'
+      });
+
+      // Atualizar contador de solicitações pendentes
+      updateChild(child.id, {
+        pendingRequests: child.pendingRequests + 1
+      });
       
       toast({
         title: "Solicitação enviada! 📱",
-        description: `Pedido de R$ ${parseFloat(amount).toFixed(2)} enviado para aprovação dos pais.`,
+        description: `Pedido de R$ ${requestAmount.toFixed(2)} enviado para aprovação dos pais.`,
       });
 
       // Limpar formulário e voltar

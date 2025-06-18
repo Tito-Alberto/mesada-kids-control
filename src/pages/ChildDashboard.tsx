@@ -15,31 +15,27 @@ import { useToast } from "@/hooks/use-toast";
 
 const ChildDashboard = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { toast } = useToast();
-  const { addMoneyRequest } = useChildren();
+  const { 
+    getChild, 
+    addMoneyRequest, 
+    getTasksByChild, 
+    updateTask, 
+    updateChild,
+    getMoneyRequestsByChild 
+  } = useChildren();
   
-  const [childData, setChildData] = useState({
-    name: "Ana",
-    id: 1,
-    balance: 25.50,
-    monthlyAllowance: 15.00,
-    nextAllowance: "5 dias",
-    level: 3,
-    xp: 250,
-    nextLevelXp: 500,
-  });
+  // Pegar dados da criança logada (assumindo ID 1 por padrão ou baseado no usuário)
+  const childId = 1; // Em produção, isso viria do contexto de autenticação
+  const child = getChild(childId);
+  const childTasks = getTasksByChild(childId);
+  const childRequests = getMoneyRequestsByChild(childId);
 
   const [availableTasks, setAvailableTasks] = useState([
     { id: 1, title: "Organizar o quarto", reward: 5.00, xp: 20, difficulty: "Fácil", icon: "🛏️" },
     { id: 2, title: "Ajudar na cozinha", reward: 7.50, xp: 30, difficulty: "Médio", icon: "👨‍🍳" },
     { id: 3, title: "Estudar matemática", reward: 10.00, xp: 40, difficulty: "Médio", icon: "📚" },
-  ]);
-
-  const [recentTransactions] = useState([
-    { id: 1, description: "Tarefa: Organizar quarto", amount: 5.00, date: "Hoje", type: "earned" },
-    { id: 2, description: "Compra: Brinquedo", amount: -12.00, date: "Ontem", type: "spent", status: "pending" },
-    { id: 3, description: "Mesada mensal", amount: 15.00, date: "3 dias atrás", type: "allowance" },
   ]);
 
   // Estados para formulário de compra
@@ -58,20 +54,19 @@ const ChildDashboard = () => {
 
   const handleAcceptTask = (taskId: number) => {
     const task = availableTasks.find(t => t.id === taskId);
-    if (task) {
+    if (task && child) {
       // Remove a tarefa da lista de disponíveis
       setAvailableTasks(prev => prev.filter(t => t.id !== taskId));
       
-      // Atualiza o saldo e XP da criança
-      setChildData(prev => ({
-        ...prev,
-        balance: prev.balance + task.reward,
-        xp: prev.xp + task.xp
-      }));
+      // Atualiza o saldo da criança
+      updateChild(child.id, {
+        balance: child.balance + task.reward,
+        tasksCompleted: child.tasksCompleted + 1
+      });
 
       toast({
         title: "Tarefa aceita! 🎉",
-        description: `Você ganhou R$ ${task.reward.toFixed(2)} e ${task.xp} XP por "${task.title}"`,
+        description: `Você ganhou R$ ${task.reward.toFixed(2)} por "${task.title}"`,
       });
     }
   };
@@ -92,10 +87,10 @@ const ChildDashboard = () => {
         return;
       }
 
-      if (amount > childData.balance) {
+      if (!child) {
         toast({
-          title: "Saldo insuficiente",
-          description: "Você não tem saldo suficiente para esta compra.",
+          title: "Erro",
+          description: "Dados do usuário não encontrados.",
           variant: "destructive",
         });
         return;
@@ -103,10 +98,15 @@ const ChildDashboard = () => {
 
       // Adicionar solicitação de compra
       addMoneyRequest({
-        childId: childData.id,
+        childId: child.id,
         amount: amount,
         description: purchaseDescription,
         status: 'pending'
+      });
+
+      // Atualizar contador de solicitações pendentes
+      updateChild(child.id, {
+        pendingRequests: child.pendingRequests + 1
       });
 
       toast({
@@ -128,7 +128,22 @@ const ChildDashboard = () => {
     }
   };
 
-  const progressPercentage = (childData.xp / childData.nextLevelXp) * 100;
+  if (!child) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-secondary/5 via-background to-primary/5 flex items-center justify-center">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p>Dados do usuário não encontrados</p>
+            <Button onClick={() => navigate("/login")} className="mt-4">
+              Fazer Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const progressPercentage = 75; // Valor fixo para demonstração
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary/5 via-background to-primary/5">
@@ -141,8 +156,8 @@ const ChildDashboard = () => {
                 <User className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">Olá, {childData.name}! 👋</h1>
-                <p className="text-sm text-muted-foreground">Nível {childData.level} • {childData.xp} XP</p>
+                <h1 className="text-xl font-bold">Olá, {child.name}! 👋</h1>
+                <p className="text-sm text-muted-foreground">{child.age} anos</p>
               </div>
             </div>
             <Button variant="outline" onClick={handleLogout}>
@@ -161,15 +176,15 @@ const ChildDashboard = () => {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-white/80 text-sm">Seu Saldo</p>
-                  <p className="text-3xl font-bold">R$ {childData.balance.toFixed(2)}</p>
+                  <p className="text-3xl font-bold">R$ {child.balance.toFixed(2)}</p>
                 </div>
                 <div className="p-3 rounded-full bg-white/20">
                   <Wallet className="w-8 h-8 text-white" />
                 </div>
               </div>
               <div className="flex items-center justify-between text-sm text-white/80">
-                <span>Próxima mesada em {childData.nextAllowance}</span>
-                <span>R$ {childData.monthlyAllowance.toFixed(2)}</span>
+                <span>Mesada mensal</span>
+                <span>R$ {child.monthlyAllowance.toFixed(2)}</span>
               </div>
             </CardContent>
           </Card>
@@ -178,14 +193,14 @@ const ChildDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-white/80 text-sm">Nível {childData.level}</p>
-                  <p className="text-2xl font-bold">{childData.xp} / {childData.nextLevelXp} XP</p>
+                  <p className="text-white/80 text-sm">Tarefas Completadas</p>
+                  <p className="text-2xl font-bold">{child.tasksCompleted}</p>
                 </div>
                 <div className="text-3xl">🏆</div>
               </div>
               <Progress value={progressPercentage} className="mb-2 bg-white/20" />
               <p className="text-sm text-white/80">
-                {childData.nextLevelXp - childData.xp} XP para o próximo nível
+                Continue completando tarefas!
               </p>
             </CardContent>
           </Card>
@@ -199,7 +214,7 @@ const ChildDashboard = () => {
                 <span className="text-2xl">🎯</span>
                 Tarefas Disponíveis
               </CardTitle>
-              <CardDescription>Complete tarefas para ganhar dinheiro e XP!</CardDescription>
+              <CardDescription>Complete tarefas para ganhar dinheiro!</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {availableTasks.length === 0 ? (
@@ -221,7 +236,6 @@ const ChildDashboard = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-success">R$ {task.reward.toFixed(2)}</p>
-                        <p className="text-xs text-muted-foreground">{task.xp} XP</p>
                       </div>
                     </div>
                     <Button 
@@ -294,55 +308,72 @@ const ChildDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Recent Transactions */}
+          {/* Recent Transactions/Requests */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5" />
-                Histórico
+                Minhas Solicitações
               </CardTitle>
-              <CardDescription>Suas últimas transações</CardDescription>
+              <CardDescription>Suas solicitações de compra</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {recentTransactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border bg-card/50">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      transaction.type === "earned" ? "bg-success/20" :
-                      transaction.type === "spent" ? "bg-warning/20" : "bg-primary/20"
-                    }`}>
-                      <span className="text-xs">
-                        {transaction.type === "earned" ? "💰" :
-                         transaction.type === "spent" ? "🛒" : "💵"}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">{transaction.description}</p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs text-muted-foreground">{transaction.date}</p>
-                        {transaction.status === "pending" && (
-                          <Badge variant="secondary" className="text-xs">Aguardando aprovação</Badge>
-                        )}
+              {childRequests.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <ShoppingCart className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Nenhuma solicitação ainda</p>
+                  <p className="text-sm mt-1">Use o formulário ao lado para fazer uma solicitação</p>
+                </div>
+              ) : (
+                childRequests.slice(0, 5).map((request) => (
+                  <div key={request.id} className="flex items-center justify-between p-3 rounded-lg border bg-card/50">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        request.status === "approved" ? "bg-success/20" :
+                        request.status === "rejected" ? "bg-destructive/20" : "bg-warning/20"
+                      }`}>
+                        <span className="text-xs">
+                          {request.status === "approved" ? "✅" :
+                           request.status === "rejected" ? "❌" : "⏳"}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{request.description}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(request.createdAt).toLocaleDateString()}
+                          </p>
+                          <Badge 
+                            variant={
+                              request.status === "approved" ? "default" :
+                              request.status === "rejected" ? "destructive" : "secondary"
+                            } 
+                            className="text-xs"
+                          >
+                            {request.status === "approved" ? "Aprovado" :
+                             request.status === "rejected" ? "Rejeitado" : "Aguardando"}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-sm">
+                        R$ {request.amount.toFixed(2)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className={`font-semibold text-sm ${
-                      transaction.amount > 0 ? "text-success" : "text-warning"
-                    }`}>
-                      {transaction.amount > 0 ? "+" : ""}R$ {Math.abs(transaction.amount).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
               
-              <Button 
-                className="w-full" 
-                variant="outline"
-                onClick={() => navigate("/allowance-history")}
-              >
-                Ver Histórico Completo
-              </Button>
+              {childRequests.length > 5 && (
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => navigate("/allowance-history")}
+                >
+                  Ver Todas as Solicitações
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
