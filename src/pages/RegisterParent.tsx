@@ -36,8 +36,36 @@ const RegisterParent = () => {
     }
 
     try {
-      // Simulação de cadastro - em produção conectar com backend
+      // Verificar se o email já está cadastrado
+      const parentsData = localStorage.getItem('parents');
+      const parents = parentsData ? JSON.parse(parentsData) : [];
+      
+      const emailExists = parents.find((parent: any) => parent.email === formData.email);
+      if (emailExists) {
+        toast({
+          title: "Email já cadastrado",
+          description: "Este email já está registrado no sistema.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Simular cadastro
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Salvar pai na base de dados
+      const newParent = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        createdAt: new Date().toISOString()
+      };
+      
+      const updatedParents = [...parents, newParent];
+      localStorage.setItem('parents', JSON.stringify(updatedParents));
       
       toast({
         title: "Cadastro realizado com sucesso!",

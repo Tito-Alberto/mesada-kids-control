@@ -33,17 +33,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
   const login = async (username: string, password: string, userType: 'parent' | 'child'): Promise<boolean> => {
-    // Simulação de login - em produção conectar com backend
     if (username && password) {
       let userData: User;
       
       if (userType === 'parent') {
-        // Para pais, usar o email como nome de usuário
+        // Verificar se o pai está cadastrado na base de dados
+        const parentsData = localStorage.getItem('parents');
+        const parents = parentsData ? JSON.parse(parentsData) : [];
+        
+        // Procurar o pai pelo email e senha
+        const parentFound = parents.find((parent: any) => 
+          parent.email === username && parent.password === password
+        );
+        
+        if (!parentFound) {
+          return false; // Pai não cadastrado
+        }
+        
         userData = {
-          id: Math.random().toString(36).substr(2, 9),
-          name: username.split('@')[0] || username, // Pega a parte antes do @ do email
+          id: parentFound.id,
+          name: parentFound.name,
           type: userType,
-          email: username,
+          email: parentFound.email,
         };
       } else {
         // Para filhos, verificar se existem no sistema

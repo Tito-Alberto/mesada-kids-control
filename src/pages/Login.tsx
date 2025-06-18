@@ -33,18 +33,26 @@ const Login = () => {
           description: `Bem-vindo${userType === 'child' ? 'a' : ''}, ${username}!`,
         });
         
-        // Navegação será automática através do AuthenticatedApp
         if (userType === "parent") {
           navigate("/parent");
         } else {
           navigate("/child");
         }
       } else {
-        toast({
-          title: "Erro no login",
-          description: "Usuário ou senha incorretos.",
-          variant: "destructive",
-        });
+        // Mensagens específicas baseadas no tipo de usuário
+        if (userType === "parent") {
+          toast({
+            title: "Acesso negado",
+            description: "Email ou senha incorretos, ou você não está cadastrado no sistema. Registre-se primeiro.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Acesso negado",
+            description: "Usuário ou senha incorretos, ou você não foi cadastrado pelos seus pais ainda.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       toast({
