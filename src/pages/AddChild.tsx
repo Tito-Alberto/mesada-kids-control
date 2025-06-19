@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { User, ArrowLeft, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -18,9 +17,11 @@ const AddChild = () => {
   const { user } = useAuth();
   
   const [childData, setChildData] = useState({
-    name: "",
-    age: "",
-    username: "",
+    firstName: "",
+    lastName: "",
+    fullName: "",
+    ticketNumber: "",
+    birthDate: "",
     password: "",
     confirmPassword: "",
     monthlyAllowance: ""
@@ -28,10 +29,32 @@ const AddChild = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
-    setChildData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setChildData(prev => {
+      const updated = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Gerar nome completo automaticamente
+      if (field === "firstName" || field === "lastName") {
+        updated.fullName = `${updated.firstName} ${updated.lastName}`.trim();
+      }
+      
+      return updated;
+    });
+  };
+
+  const calculateAge = (birthDate: string) => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,12 +80,22 @@ const AddChild = () => {
       return;
     }
 
-    // Verificar se o username já existe
-    const usernameExists = children.find(child => child.username === childData.username);
-    if (usernameExists) {
+    // Verificar se o número do bilhete já existe
+    const ticketExists = children.find(child => child.ticketNumber === childData.ticketNumber);
+    if (ticketExists) {
       toast({
-        title: "Nome de usuário já existe",
-        description: "Este nome de usuário já está sendo usado. Escolha outro.",
+        title: "Número do bilhete já existe",
+        description: "Este número do bilhete já está sendo usado. Escolha outro.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Verificar se todos os campos obrigatórios estão preenchidos
+    if (!childData.firstName || !childData.lastName || !childData.ticketNumber || !childData.birthDate || !childData.password || !childData.monthlyAllowance) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha todos os campos obrigatórios.",
         variant: "destructive",
       });
       return;
@@ -71,11 +104,16 @@ const AddChild = () => {
     setIsLoading(true);
     
     try {
+      const age = calculateAge(childData.birthDate);
+      
       // Add child to context
       addChild({
-        name: childData.name,
-        age: parseInt(childData.age),
-        username: childData.username,
+        name: childData.fullName,
+        firstName: childData.firstName,
+        lastName: childData.lastName,
+        age: age,
+        ticketNumber: childData.ticketNumber,
+        birthDate: childData.birthDate,
         password: childData.password,
         monthlyAllowance: parseFloat(childData.monthlyAllowance),
         parentId: user?.id || "parent1"
@@ -88,7 +126,7 @@ const AddChild = () => {
       
       toast({
         title: "Filho adicionado com sucesso!",
-        description: `${childData.name} foi adicionado à sua conta.`,
+        description: `${childData.fullName} foi adicionado à sua conta.`,
       });
       
       navigate("/parent");
@@ -146,53 +184,70 @@ const AddChild = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nome completo</Label>
+                  <Label htmlFor="firstName">Nome *</Label>
                   <Input
-                    id="name"
+                    id="firstName"
                     type="text"
-                    placeholder="Nome do seu filho"
-                    value={childData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    placeholder="Nome"
+                    value={childData.firstName}
+                    onChange={(e) => handleInputChange("firstName", e.target.value)}
                     required
                     disabled={isLoading}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="age">Idade</Label>
-                  <Select 
-                    value={childData.age} 
-                    onValueChange={(value) => handleInputChange("age", value)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a idade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 13 }, (_, i) => i + 6).map(age => (
-                        <SelectItem key={age} value={age.toString()}>
-                          {age} anos
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="username">Nome de usuário</Label>
+                  <Label htmlFor="lastName">Sobrenome *</Label>
                   <Input
-                    id="username"
+                    id="lastName"
                     type="text"
-                    placeholder="nome_usuario"
-                    value={childData.username}
-                    onChange={(e) => handleInputChange("username", e.target.value)}
+                    placeholder="Sobrenome"
+                    value={childData.lastName}
+                    onChange={(e) => handleInputChange("lastName", e.target.value)}
                     required
                     disabled={isLoading}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
+                  <Label htmlFor="fullName">Nome Completo</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="Nome completo (gerado automaticamente)"
+                    value={childData.fullName}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ticketNumber">Número do Bilhete *</Label>
+                  <Input
+                    id="ticketNumber"
+                    type="text"
+                    placeholder="Ex: 123456789"
+                    value={childData.ticketNumber}
+                    onChange={(e) => handleInputChange("ticketNumber", e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="birthDate">Data de Nascimento *</Label>
+                  <Input
+                    id="birthDate"
+                    type="date"
+                    value={childData.birthDate}
+                    onChange={(e) => handleInputChange("birthDate", e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Senha *</Label>
                   <Input
                     id="password"
                     type="password"
@@ -205,7 +260,7 @@ const AddChild = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                  <Label htmlFor="confirmPassword">Confirmar Senha *</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -221,7 +276,7 @@ const AddChild = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="allowance">Mesada mensal (R$)</Label>
+                  <Label htmlFor="allowance">Mesada mensal (R$) *</Label>
                   <Input
                     id="allowance"
                     type="number"

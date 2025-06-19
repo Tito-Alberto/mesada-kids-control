@@ -1,10 +1,15 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export interface Child {
   id: number;
   name: string;
+  firstName: string;
+  lastName: string;
   age: number;
-  username: string;
+  ticketNumber: string;
+  birthDate: string;
+  username?: string; // Manter para compatibilidade com dados antigos
   password: string;
   balance: number;
   monthlyAllowance: number;

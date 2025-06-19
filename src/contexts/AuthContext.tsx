@@ -10,7 +10,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string, userType: 'parent' | 'child') => Promise<boolean>;
+  login: (identifier: string, password: string, userType: 'parent' | 'child', ticketNumber?: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -32,8 +32,8 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = async (username: string, password: string, userType: 'parent' | 'child'): Promise<boolean> => {
-    if (username && password) {
+  const login = async (identifier: string, password: string, userType: 'parent' | 'child', ticketNumber?: string): Promise<boolean> => {
+    if (identifier && password) {
       let userData: User;
       
       if (userType === 'parent') {
@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // Procurar o pai pelo email e senha
         const parentFound = parents.find((parent: any) => 
-          parent.email === username && parent.password === password
+          parent.email === identifier && parent.password === password
         );
         
         if (!parentFound) {
@@ -57,14 +57,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email: parentFound.email,
         };
       } else {
-        // Para filhos, verificar se existem no sistema
+        // Para filhos, verificar se existem no sistema usando nome + número do bilhete + senha
         const childrenData = localStorage.getItem('children');
         const children = childrenData ? JSON.parse(childrenData) : [];
         
-        // Procurar a criança pelo username e password
-        const childFound = children.find((child: any) => 
-          child.username === username && child.password === password
-        );
+        // Procurar a criança pelo nome, número do bilhete e senha
+        const childFound = children.find((child: any) => {
+          // Suportar tanto o sistema antigo (username) quanto o novo (nome + bilhete)
+          if (child.username) {
+            // Sistema antigo
+            return child.username === identifier && child.password === password;
+          } else {
+            // Sistema novo
+            return child.name === identifier && 
+                   child.ticketNumber === ticketNumber && 
+                   child.password === password;
+          }
+        });
         
         if (!childFound) {
           return false; // Criança não cadastrada pelos pais
