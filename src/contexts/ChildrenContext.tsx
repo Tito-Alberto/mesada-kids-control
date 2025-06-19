@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export interface Child {
@@ -32,6 +31,12 @@ export interface MoneyRequest {
   description: string;
   status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
+  messages?: {
+    id: number;
+    text: string;
+    sender: 'parent' | 'child';
+    timestamp: string;
+  }[];
 }
 
 interface ChildrenContextType {

@@ -1,15 +1,16 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Wallet, User, LogOut, DollarSign, ArrowRight, FileText, Check, X, Plus } from "lucide-react";
+import { Users, Wallet, User, LogOut, DollarSign, ArrowRight, FileText, Check, X, Plus, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChildren } from "@/contexts/ChildrenContext";
 import { useToast } from "@/hooks/use-toast";
+import NotificationBadge from "@/components/NotificationBadge";
+import RequestCommunication from "@/components/RequestCommunication";
 
 const ParentDashboard = () => {
   const navigate = useNavigate();
@@ -31,6 +32,11 @@ const ParentDashboard = () => {
     getMoneyRequestsByChild(child.id).filter(r => r.status === 'pending')
   );
 
+  // Get all requests for communication view
+  const allRequests = children.flatMap(child => 
+    getMoneyRequestsByChild(child.id)
+  );
+
   const [recentActivity] = useState([
     { id: 1, child: "Ana", action: "Completou tarefa", amount: 5.00, time: "2 horas atrás", type: "task" },
     { id: 2, child: "Pedro", action: "Solicitou gasto", amount: -12.00, time: "1 dia atrás", type: "request" },
@@ -38,6 +44,7 @@ const ParentDashboard = () => {
   ]);
 
   const [balanceInputs, setBalanceInputs] = useState<{[key: number]: string}>({});
+  const [showCommunication, setShowCommunication] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -116,6 +123,14 @@ const ParentDashboard = () => {
               </div>
             </div>
             <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCommunication(!showCommunication)}
+                className="relative"
+              >
+                <NotificationBadge count={allPendingRequests.length} />
+                <span className="ml-2">Comunicação</span>
+              </Button>
               <Button variant="outline" onClick={() => navigate("/spending-history")}>
                 <FileText className="w-4 h-4 mr-2" />
                 Relatórios
@@ -130,6 +145,39 @@ const ParentDashboard = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Communication Panel */}
+        {showCommunication && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Central de Comunicação
+              </CardTitle>
+              <CardDescription>
+                Converse com seus filhos sobre as solicitações
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {allRequests.length > 0 ? (
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {allRequests.map((request) => (
+                    <RequestCommunication 
+                      key={request.id} 
+                      requestId={request.id} 
+                      isParent={true}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Nenhuma solicitação para conversar</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Overview Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card className="gradient-card">

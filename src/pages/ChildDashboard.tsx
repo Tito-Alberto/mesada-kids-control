@@ -3,11 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Wallet, Target, Gift, LogOut, User, Plus, History, Trophy, DollarSign } from "lucide-react";
+import { Wallet, Target, Gift, LogOut, User, Plus, History, Trophy, DollarSign, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChildren } from "@/contexts/ChildrenContext";
 import { useToast } from "@/hooks/use-toast";
+import NotificationBadge from "@/components/NotificationBadge";
+import RequestCommunication from "@/components/RequestCommunication";
 
 const ChildDashboard = () => {
   const navigate = useNavigate();
@@ -43,11 +45,14 @@ const ChildDashboard = () => {
   const child = currentChild;
   const childTasks = getTasksByChild(child.id);
   const childRequests = getMoneyRequestsByChild(child.id);
+  const pendingRequests = childRequests.filter(r => r.status === 'pending');
 
   const [recentActivity] = useState([
     { id: 1, action: "Completou tarefa", amount: 5.00, time: "2 horas atrás", type: "task" },
     { id: 2, action: "Mesada recebida", amount: 15.00, time: "3 dias atrás", type: "allowance" },
   ]);
+
+  const [showCommunication, setShowCommunication] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -105,6 +110,14 @@ const ChildDashboard = () => {
               </div>
             </div>
             <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCommunication(!showCommunication)}
+                className="relative"
+              >
+                <NotificationBadge count={pendingRequests.length} />
+                <span className="ml-2">Mensagens</span>
+              </Button>
               <Button variant="outline" onClick={() => navigate("/achievements")}>
                 <Trophy className="w-4 h-4 mr-2" />
                 Conquistas
@@ -119,6 +132,39 @@ const ChildDashboard = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Communication Panel */}
+        {showCommunication && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Mensagens dos Pais
+              </CardTitle>
+              <CardDescription>
+                Converse com seus pais sobre suas solicitações
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {childRequests.length > 0 ? (
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {childRequests.map((request) => (
+                    <RequestCommunication 
+                      key={request.id} 
+                      requestId={request.id} 
+                      isParent={false}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Você ainda não fez nenhuma solicitação</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Saldo e Status */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="money-gradient text-white">
