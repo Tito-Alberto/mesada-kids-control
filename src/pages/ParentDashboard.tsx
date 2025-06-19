@@ -56,9 +56,20 @@ const ParentDashboard = () => {
     if (request) {
       const child = children.find(c => c.id === request.childId);
       if (child) {
+        // Verificar se o filho tem saldo suficiente
+        if (child.balance < request.amount) {
+          toast({
+            title: "Saldo insuficiente!",
+            description: `${child.name} não tem saldo suficiente. Saldo atual: R$ ${child.balance.toFixed(2)}`,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Aprovar a solicitação e descontar do saldo
         updateChild(child.id, {
           balance: child.balance - request.amount,
-          pendingRequests: child.pendingRequests - 1
+          pendingRequests: Math.max(0, child.pendingRequests - 1)
         });
         
         updateMoneyRequest(requestId, { status: 'approved' });
@@ -78,12 +89,12 @@ const ParentDashboard = () => {
       if (child) {
         updateMoneyRequest(requestId, { status: 'rejected' });
         updateChild(child.id, {
-          pendingRequests: child.pendingRequests - 1
+          pendingRequests: Math.max(0, child.pendingRequests - 1)
         });
         
         toast({
           title: "Solicitação rejeitada",
-          description: "A solicitação foi rejeitada",
+          description: `Solicitação de R$ ${request.amount.toFixed(2)} foi rejeitada`,
           variant: "destructive",
         });
       }
@@ -230,7 +241,7 @@ const ParentDashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Solicitações</p>
-                  <p className="text-2xl font-bold">{children.reduce((acc, child) => acc + child.pendingRequests, 0)}</p>
+                  <p className="text-2xl font-bold">{allPendingRequests.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -249,66 +260,69 @@ const ParentDashboard = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {children.length > 0 ? (
-                children.map((child) => (
-                  <div key={child.id} className="p-4 rounded-xl border bg-gradient-to-r from-card to-muted/10 hover:shadow-md transition-all">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                          <User className="w-5 h-5 text-primary" />
+                children.map((child) => {
+                  const childPendingRequests = getMoneyRequestsByChild(child.id).filter(r => r.status === 'pending').length;
+                  return (
+                    <div key={child.id} className="p-4 rounded-xl border bg-gradient-to-r from-card to-muted/10 hover:shadow-md transition-all">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                            <User className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold">{child.name}</h3>
+                            <p className="text-sm text-muted-foreground">{child.age} anos</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold">{child.name}</h3>
-                          <p className="text-sm text-muted-foreground">{child.age} anos</p>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-success">R$ {child.balance.toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">Saldo atual</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-success">R$ {child.balance.toFixed(2)}</p>
-                        <p className="text-xs text-muted-foreground">Saldo atual</p>
+                      
+                      <div className="flex items-center justify-between text-sm mb-3">
+                        <div className="flex gap-4">
+                          <span>Mesada: R$ {child.monthlyAllowance}</span>
+                          <span>Tarefas: {child.tasksCompleted}</span>
+                        </div>
+                        {childPendingRequests > 0 && (
+                          <Badge variant="destructive">{childPendingRequests} solicitação{childPendingRequests > 1 ? 'ões' : ''}</Badge>
+                        )}
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between text-sm mb-3">
-                      <div className="flex gap-4">
-                        <span>Mesada: R$ {child.monthlyAllowance}</span>
-                        <span>Tarefas: {child.tasksCompleted}</span>
-                      </div>
-                      {child.pendingRequests > 0 && (
-                        <Badge variant="destructive">{child.pendingRequests} solicitação</Badge>
-                      )}
-                    </div>
 
-                    {/* Quick Add Balance */}
-                    <div className="flex gap-2 mb-3">
-                      <div className="flex-1">
-                        <Input
-                          type="number"
-                          step="0.50"
-                          placeholder="Valor (R$)"
-                          value={balanceInputs[child.id] || ""}
-                          onChange={(e) => setBalanceInputs(prev => ({ ...prev, [child.id]: e.target.value }))}
-                        />
+                      {/* Quick Add Balance */}
+                      <div className="flex gap-2 mb-3">
+                        <div className="flex-1">
+                          <Input
+                            type="number"
+                            step="0.50"
+                            placeholder="Valor (R$)"
+                            value={balanceInputs[child.id] || ""}
+                            onChange={(e) => setBalanceInputs(prev => ({ ...prev, [child.id]: e.target.value }))}
+                          />
+                        </div>
+                        <Button 
+                          size="sm"
+                          className="money-gradient text-white"
+                          onClick={() => handleAddBalance(child.id)}
+                          disabled={!balanceInputs[child.id] || parseFloat(balanceInputs[child.id]) <= 0}
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Adicionar
+                        </Button>
                       </div>
+                      
                       <Button 
-                        size="sm"
-                        className="money-gradient text-white"
-                        onClick={() => handleAddBalance(child.id)}
-                        disabled={!balanceInputs[child.id] || parseFloat(balanceInputs[child.id]) <= 0}
+                        className="w-full" 
+                        variant="outline"
+                        onClick={() => navigate(`/manage-child/${child.id}`)}
                       >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Adicionar
+                        Gerenciar
+                        <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </div>
-                    
-                    <Button 
-                      className="w-full" 
-                      variant="outline"
-                      onClick={() => navigate(`/manage-child/${child.id}`)}
-                    >
-                      Gerenciar
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="text-center py-8">
                   <div className="p-4 rounded-full bg-muted/50 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
@@ -331,8 +345,14 @@ const ParentDashboard = () => {
           {/* Pending Requests with Quick Actions */}
           <Card>
             <CardHeader>
-              <CardTitle>Solicitações Pendentes</CardTitle>
-              <CardDescription>Aprove ou rejeite gastos rapidamente</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Solicitações Pendentes
+                {allPendingRequests.length > 0 && (
+                  <Badge variant="destructive">{allPendingRequests.length}</Badge>
+                )}
+              </CardTitle>
+              <CardDescription>Aprove ou rejeite gastos dos seus filhos</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {allPendingRequests.length === 0 ? (
@@ -345,6 +365,8 @@ const ParentDashboard = () => {
               ) : (
                 allPendingRequests.map((request) => {
                   const child = children.find(c => c.id === request.childId);
+                  const hasInsufficientBalance = child && child.balance < request.amount;
+                  
                   return (
                     <div key={request.id} className="p-4 rounded-lg border bg-card/50">
                       <div className="flex items-center justify-between mb-3">
@@ -353,6 +375,11 @@ const ParentDashboard = () => {
                           <p className="text-sm text-muted-foreground">
                             {child?.name} • {new Date(request.createdAt).toLocaleDateString()}
                           </p>
+                          {hasInsufficientBalance && (
+                            <p className="text-xs text-destructive mt-1">
+                              Saldo insuficiente: R$ {child.balance.toFixed(2)}
+                            </p>
+                          )}
                         </div>
                         <p className="font-bold text-lg">R$ {request.amount.toFixed(2)}</p>
                       </div>
@@ -361,6 +388,7 @@ const ParentDashboard = () => {
                           size="sm" 
                           className="flex-1 bg-success hover:bg-success/80 text-white"
                           onClick={() => handleApproveRequest(request.id)}
+                          disabled={hasInsufficientBalance}
                         >
                           <Check className="w-4 h-4 mr-1" />
                           Aprovar
