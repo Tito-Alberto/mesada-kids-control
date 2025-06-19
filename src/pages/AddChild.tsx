@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const AddChild = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { addChild } = useChildren();
+  const { addChild, children } = useChildren();
   const { user } = useAuth();
   
   const [childData, setChildData] = useState({
@@ -52,6 +52,17 @@ const AddChild = () => {
       toast({
         title: "Senha muito curta",
         description: "A senha deve ter pelo menos 4 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Verificar se o username já existe
+    const usernameExists = children.find(child => child.username === childData.username);
+    if (usernameExists) {
+      toast({
+        title: "Nome de usuário já existe",
+        description: "Este nome de usuário já está sendo usado. Escolha outro.",
         variant: "destructive",
       });
       return;

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export interface Child {
@@ -61,70 +62,63 @@ export const useChildren = () => {
 };
 
 export const ChildrenProvider = ({ children }: { children: ReactNode }) => {
-  // Carregar dados do localStorage ou usar dados padrão
+  // Carregar dados do localStorage ou usar dados padrão apenas se não existirem
   const loadChildrenFromStorage = () => {
     const stored = localStorage.getItem('children');
     if (stored) {
-      return JSON.parse(stored);
+      try {
+        return JSON.parse(stored);
+      } catch (error) {
+        console.error('Erro ao carregar dados das crianças:', error);
+        return [];
+      }
     }
-    return [
-      { 
-        id: 1, 
-        name: "Ana", 
-        age: 8, 
-        username: "ana_user",
-        password: "ana123",
-        balance: 25.50, 
-        monthlyAllowance: 15, 
-        tasksCompleted: 3, 
-        pendingRequests: 1,
-        parentId: "parent1"
-      },
-      { 
-        id: 2, 
-        name: "Pedro", 
-        age: 12, 
-        username: "pedro_user",
-        password: "pedro123",
-        balance: 48.75, 
-        monthlyAllowance: 25, 
-        tasksCompleted: 5, 
-        pendingRequests: 0,
-        parentId: "parent1"
-      },
-    ];
+    // Retornar array vazio se não houver dados salvos
+    return [];
+  };
+
+  const loadTasksFromStorage = () => {
+    const stored = localStorage.getItem('tasks');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (error) {
+        console.error('Erro ao carregar tarefas:', error);
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const loadMoneyRequestsFromStorage = () => {
+    const stored = localStorage.getItem('moneyRequests');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (error) {
+        console.error('Erro ao carregar solicitações de dinheiro:', error);
+        return [];
+      }
+    }
+    return [];
   };
 
   const [childrenList, setChildrenList] = useState<Child[]>(loadChildrenFromStorage);
+  const [tasks, setTasks] = useState<Task[]>(loadTasksFromStorage);
+  const [moneyRequests, setMoneyRequests] = useState<MoneyRequest[]>(loadMoneyRequestsFromStorage);
 
-  // Salvar no localStorage sempre que a lista de filhos mudar
+  // Salvar no localStorage sempre que as listas mudarem
   useEffect(() => {
     localStorage.setItem('children', JSON.stringify(childrenList));
   }, [childrenList]);
 
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: 1,
-      childId: 1,
-      title: "Organizar o quarto",
-      description: "Arrumar a cama e guardar os brinquedos",
-      reward: 5.00,
-      status: "completed",
-      createdAt: new Date().toISOString(),
-      completedAt: new Date().toISOString()
-    }
-  ]);
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
 
-  const [moneyRequests, setMoneyRequests] = useState<MoneyRequest[]>([
-    {
-      id: 1,
-      childId: 1,
-      amount: 12.00,
-      description: "Comprar livro de colorir",
-      status: "pending",
-      createdAt: new Date().toISOString()
-    }
-  ]);
+  useEffect(() => {
+    localStorage.setItem('moneyRequests', JSON.stringify(moneyRequests));
+  }, [moneyRequests]);
 
   const addChild = (childData: Omit<Child, 'id' | 'balance' | 'tasksCompleted' | 'pendingRequests'>) => {
     const newChild: Child = {
