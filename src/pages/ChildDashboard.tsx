@@ -173,7 +173,7 @@ const ChildDashboard = () => {
                 <Wallet className="w-8 h-8" />
                 <div>
                   <p className="text-sm opacity-90">Meu Saldo</p>
-                  <p className="text-3xl font-bold">R$ {child.balance.toFixed(2)}</p>
+                  <p className="text-3xl font-bold">Kz {child.balance.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -197,7 +197,7 @@ const ChildDashboard = () => {
                 <Gift className="w-8 h-8 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Mesada Mensal</p>
-                  <p className="text-3xl font-bold text-primary">R$ {child.monthlyAllowance.toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-primary">Kz {child.monthlyAllowance.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -229,7 +229,7 @@ const ChildDashboard = () => {
                       <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
                     )}
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-success">+ R$ {task.reward.toFixed(2)}</span>
+                      <span className="text-lg font-bold text-success">+ Kz {task.reward.toFixed(2)}</span>
                       {task.status === 'pending' && (
                         <Button 
                           size="sm"
@@ -275,7 +275,7 @@ const ChildDashboard = () => {
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold">R$ {request.amount.toFixed(2)}</span>
+                      <span className="text-lg font-bold">Kz {request.amount.toFixed(2)}</span>
                       <span className="text-sm text-muted-foreground">
                         {new Date(request.createdAt).toLocaleDateString()}
                       </span>

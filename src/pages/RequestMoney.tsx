@@ -63,7 +63,7 @@ const RequestMoney = () => {
       
       toast({
         title: "Solicitação enviada! 📱",
-        description: `Pedido de R$ ${requestAmount.toFixed(2)} enviado para aprovação dos pais.`,
+        description: `Pedido de Kz ${requestAmount.toFixed(2)} enviado para aprovação dos pais.`,
       });
 
       // Limpar formulário e voltar
@@ -122,7 +122,7 @@ const RequestMoney = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Valor (R$)</Label>
+                  <Label htmlFor="amount">Valor (Kz)</Label>
                   <Input
                     id="amount"
                     type="number"

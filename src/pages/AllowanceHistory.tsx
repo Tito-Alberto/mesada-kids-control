@@ -101,7 +101,7 @@ const AllowanceHistory = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Recebido</p>
-                  <p className="text-2xl font-bold text-success">R$ {totalReceived.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-success">Kz {totalReceived.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -115,7 +115,7 @@ const AllowanceHistory = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Gasto</p>
-                  <p className="text-2xl font-bold text-destructive">R$ {totalSpent.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-destructive">Kz {totalSpent.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -168,10 +168,10 @@ const AllowanceHistory = () => {
                     <TableCell className={`text-right font-medium ${
                       transaction.amount > 0 ? "text-success" : "text-destructive"
                     }`}>
-                      {transaction.amount > 0 ? "+" : ""}R$ {Math.abs(transaction.amount).toFixed(2)}
+                      {transaction.amount > 0 ? "+" : ""}Kz {Math.abs(transaction.amount).toFixed(2)}
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      R$ {transaction.balance.toFixed(2)}
+                      Kz {transaction.balance.toFixed(2)}
                     </TableCell>
                   </TableRow>
                 ))}

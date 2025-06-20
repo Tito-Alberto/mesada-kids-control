@@ -99,7 +99,7 @@ const SpendingHistory = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Investido</p>
-                  <p className="text-2xl font-bold text-primary">R$ {totalSpent.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-primary">Kz {totalSpent.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -113,7 +113,7 @@ const SpendingHistory = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Gasto com Ana</p>
-                  <p className="text-2xl font-bold text-secondary">R$ {spentOnAna.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-secondary">Kz {spentOnAna.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -127,7 +127,7 @@ const SpendingHistory = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Gasto com Pedro</p>
-                  <p className="text-2xl font-bold text-success">R$ {spentOnPedro.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-success">Kz {spentOnPedro.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -181,7 +181,7 @@ const SpendingHistory = () => {
                     </TableCell>
                     <TableCell>{spending.description}</TableCell>
                     <TableCell className="text-right font-medium text-primary">
-                      R$ {spending.amount.toFixed(2)}
+                      Kz {spending.amount.toFixed(2)}
                     </TableCell>
                   </TableRow>
                 ))}

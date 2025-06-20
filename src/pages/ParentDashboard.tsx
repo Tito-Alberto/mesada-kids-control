@@ -60,7 +60,7 @@ const ParentDashboard = () => {
         if (child.balance < request.amount) {
           toast({
             title: "Saldo insuficiente!",
-            description: `${child.name} não tem saldo suficiente. Saldo atual: R$ ${child.balance.toFixed(2)}`,
+            description: `${child.name} não tem saldo suficiente. Saldo atual: Kz ${child.balance.toFixed(2)}`,
             variant: "destructive",
           });
           return;
@@ -76,7 +76,7 @@ const ParentDashboard = () => {
         
         toast({
           title: "Solicitação aprovada!",
-          description: `Gasto de R$ ${request.amount.toFixed(2)} aprovado para ${child.name}`,
+          description: `Gasto de Kz ${request.amount.toFixed(2)} aprovado para ${child.name}`,
         });
       }
     }
@@ -94,7 +94,7 @@ const ParentDashboard = () => {
         
         toast({
           title: "Solicitação rejeitada",
-          description: `Solicitação de R$ ${request.amount.toFixed(2)} foi rejeitada`,
+          description: `Solicitação de Kz ${request.amount.toFixed(2)} foi rejeitada`,
           variant: "destructive",
         });
       }
@@ -111,7 +111,7 @@ const ParentDashboard = () => {
       
       toast({
         title: "Saldo adicionado!",
-        description: `R$ ${amount.toFixed(2)} adicionados ao saldo de ${child.name}`,
+        description: `Kz ${amount.toFixed(2)} adicionados ao saldo de ${child.name}`,
       });
     }
   };
@@ -213,7 +213,7 @@ const ParentDashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total em Saldos</p>
-                  <p className="text-2xl font-bold">R$ {children.reduce((acc, child) => acc + child.balance, 0).toFixed(2)}</p>
+                  <p className="text-2xl font-bold">Kz {children.reduce((acc, child) => acc + child.balance, 0).toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -227,7 +227,7 @@ const ParentDashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mesadas Mensais</p>
-                  <p className="text-2xl font-bold">R$ {children.reduce((acc, child) => acc + child.monthlyAllowance, 0).toFixed(2)}</p>
+                  <p className="text-2xl font-bold">Kz {children.reduce((acc, child) => acc + child.monthlyAllowance, 0).toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -275,14 +275,14 @@ const ParentDashboard = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-success">R$ {child.balance.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-success">Kz {child.balance.toFixed(2)}</p>
                           <p className="text-xs text-muted-foreground">Saldo atual</p>
                         </div>
                       </div>
                       
                       <div className="flex items-center justify-between text-sm mb-3">
                         <div className="flex gap-4">
-                          <span>Mesada: R$ {child.monthlyAllowance}</span>
+                          <span>Mesada: Kz {child.monthlyAllowance}</span>
                           <span>Tarefas: {child.tasksCompleted}</span>
                         </div>
                         {childPendingRequests > 0 && (
@@ -296,7 +296,7 @@ const ParentDashboard = () => {
                           <Input
                             type="number"
                             step="0.50"
-                            placeholder="Valor (R$)"
+                            placeholder="Valor (Kz)"
                             value={balanceInputs[child.id] || ""}
                             onChange={(e) => setBalanceInputs(prev => ({ ...prev, [child.id]: e.target.value }))}
                           />
@@ -377,11 +377,11 @@ const ParentDashboard = () => {
                           </p>
                           {hasInsufficientBalance && (
                             <p className="text-xs text-destructive mt-1">
-                              Saldo insuficiente: R$ {child.balance.toFixed(2)}
+                              Saldo insuficiente: Kz {child.balance.toFixed(2)}
                             </p>
                           )}
                         </div>
-                        <p className="font-bold text-lg">R$ {request.amount.toFixed(2)}</p>
+                        <p className="font-bold text-lg">Kz {request.amount.toFixed(2)}</p>
                       </div>
                       <div className="flex gap-2">
                         <Button 

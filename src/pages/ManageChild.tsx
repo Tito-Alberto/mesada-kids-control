@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -65,7 +64,7 @@ const ManageChild = () => {
       
       toast({
         title: "Solicitação aprovada!",
-        description: `Gasto de R$ ${request.amount.toFixed(2)} aprovado para ${child.name}`,
+        description: `Gasto de Kz ${request.amount.toFixed(2)} aprovado para ${child.name}`,
       });
     }
   };
@@ -110,7 +109,7 @@ const ManageChild = () => {
     
     toast({
       title: "Mesada atualizada!",
-      description: `Nova mesada mensal: R$ ${newAmount.toFixed(2)}`,
+      description: `Nova mesada mensal: Kz ${newAmount.toFixed(2)}`,
     });
   };
 
@@ -122,7 +121,7 @@ const ManageChild = () => {
       
       toast({
         title: "Saldo adicionado!",
-        description: `R$ ${amount.toFixed(2)} adicionados ao saldo de ${child.name}`,
+        description: `Kz ${amount.toFixed(2)} adicionados ao saldo de ${child.name}`,
       });
     }
   };
@@ -132,7 +131,7 @@ const ManageChild = () => {
     if (child.balance < child.monthlyAllowance) {
       toast({
         title: "Saldo insuficiente!",
-        description: `${child.name} não tem saldo suficiente. Saldo atual: R$ ${child.balance.toFixed(2)}, Mesada: R$ ${child.monthlyAllowance.toFixed(2)}`,
+        description: `${child.name} não tem saldo suficiente. Saldo atual: Kz ${child.balance.toFixed(2)}, Mesada: Kz ${child.monthlyAllowance.toFixed(2)}`,
         variant: "destructive",
       });
       return;
@@ -145,7 +144,7 @@ const ManageChild = () => {
     
     toast({
       title: "Mesada liberada!",
-      description: `R$ ${child.monthlyAllowance.toFixed(2)} retirados do saldo de ${child.name}. Novo saldo: R$ ${(child.balance - child.monthlyAllowance).toFixed(2)}`,
+      description: `Kz ${child.monthlyAllowance.toFixed(2)} retirados do saldo de ${child.name}. Novo saldo: Kz ${(child.balance - child.monthlyAllowance).toFixed(2)}`,
     });
   };
 
@@ -183,7 +182,7 @@ const ManageChild = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Saldo Atual</p>
-                  <p className="text-2xl font-bold">R$ {child.balance.toFixed(2)}</p>
+                  <p className="text-2xl font-bold">Kz {child.balance.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -197,7 +196,7 @@ const ManageChild = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mesada Mensal</p>
-                  <p className="text-2xl font-bold">R$ {child.monthlyAllowance.toFixed(2)}</p>
+                  <p className="text-2xl font-bold">Kz {child.monthlyAllowance.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -238,7 +237,7 @@ const ManageChild = () => {
                           {new Date(request.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <p className="font-bold text-lg">R$ {request.amount.toFixed(2)}</p>
+                      <p className="font-bold text-lg">Kz {request.amount.toFixed(2)}</p>
                     </div>
                     <div className="flex gap-2">
                       <Button 
@@ -301,7 +300,7 @@ const ManageChild = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="taskReward">Recompensa (R$)</Label>
+                    <Label htmlFor="taskReward">Recompensa (Kz)</Label>
                     <Input
                       id="taskReward"
                       type="number"
@@ -332,7 +331,7 @@ const ManageChild = () => {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-success">R$ {task.reward.toFixed(2)}</p>
+                      <p className="font-bold text-success">Kz {task.reward.toFixed(2)}</p>
                       <Badge variant={task.status === "completed" ? "default" : "secondary"}>
                         {task.status === "completed" ? "Completada" : "Pendente"}
                       </Badge>
@@ -355,7 +354,7 @@ const ManageChild = () => {
             <CardContent>
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <Label htmlFor="balanceAmount">Valor (R$)</Label>
+                  <Label htmlFor="balanceAmount">Valor (Kz)</Label>
                   <Input
                     id="balanceAmount"
                     type="number"
@@ -385,7 +384,7 @@ const ManageChild = () => {
             <CardContent>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <Label htmlFor="allowance">Mesada Mensal (R$)</Label>
+                  <Label htmlFor="allowance">Mesada Mensal (Kz)</Label>
                   <Input
                     id="allowance"
                     type="number"
