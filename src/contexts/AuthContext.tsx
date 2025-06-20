@@ -57,22 +57,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email: parentFound.email,
         };
       } else {
-        // Para filhos, verificar se existem no sistema usando nome + número do bilhete + senha
+        // Para filhos, verificar se existem no sistema usando nome completo e senha
         const childrenData = localStorage.getItem('children');
         const children = childrenData ? JSON.parse(childrenData) : [];
         
-        // Procurar a criança pelo nome, número do bilhete e senha
+        // Procurar a criança pelo nome completo e senha
         const childFound = children.find((child: any) => {
-          // Suportar tanto o sistema antigo (username) quanto o novo (nome + bilhete)
-          if (child.username) {
-            // Sistema antigo
-            return child.username === identifier && child.password === password;
-          } else {
-            // Sistema novo
-            return child.name === identifier && 
-                   child.ticketNumber === ticketNumber && 
-                   child.password === password;
-          }
+          // Usar o nome completo (name) para login
+          return child.name === identifier && child.password === password;
         });
         
         if (!childFound) {

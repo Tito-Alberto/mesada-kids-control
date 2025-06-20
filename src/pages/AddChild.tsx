@@ -276,7 +276,7 @@ const AddChild = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="allowance">Mesada mensal (R$) *</Label>
+                  <Label htmlFor="allowance">Mesada mensal (Kz) *</Label>
                   <Input
                     id="allowance"
                     type="number"
