@@ -49,7 +49,7 @@ const Login = () => {
         } else {
           toast({
             title: "Acesso negado",
-            description: "Nome completo ou senha incorretos, ou você não foi cadastrado pelos seus pais ainda.",
+            description: "Nome ou senha incorretos, ou você não foi cadastrado pelos seus pais ainda. Tente com seu primeiro nome ou nome completo.",
             variant: "destructive",
           });
         }
@@ -126,12 +126,12 @@ const Login = () => {
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="username">
-                  {userType === "parent" ? "Email" : "Nome completo"}
+                  {userType === "parent" ? "Email" : "Nome completo ou primeiro nome"}
                 </Label>
                 <Input
                   id="username"
                   type={userType === "parent" ? "email" : "text"}
-                  placeholder={userType === "parent" ? "seu@email.com" : "Seu nome completo"}
+                  placeholder={userType === "parent" ? "seu@email.com" : "Seu nome completo ou primeiro nome"}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required

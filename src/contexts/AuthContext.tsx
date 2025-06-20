@@ -62,22 +62,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email: parentFound.email,
         };
       } else {
-        // Para filhos, verificar se existem no sistema usando nome completo e senha
+        // Para filhos, verificar se existem no sistema usando nome completo ou primeiro nome e senha
         const childrenData = localStorage.getItem('children');
         const children = childrenData ? JSON.parse(childrenData) : [];
         
         console.log('Crianças disponíveis:', children);
         console.log('Procurando por:', { name: identifier, password: password });
         
-        // Procurar a criança pelo nome completo e senha
+        // Procurar a criança pelo nome completo, primeiro nome ou último nome e senha
         const childFound = children.find((child: any) => {
+          const childFullName = child.name ? child.name.trim() : '';
+          const childFirstName = child.firstName ? child.firstName.trim() : '';
+          const inputName = identifier.trim();
+          
+          // Permitir login com nome completo ou primeiro nome
+          const nameMatch = childFullName === inputName || childFirstName === inputName;
+          const passwordMatch = child.password === password;
+          
           console.log('Comparando com criança:', { 
-            childName: child.name, 
+            childFullName,
+            childFirstName,
+            inputName,
             childPassword: child.password,
-            match: child.name === identifier && child.password === password
+            nameMatch,
+            passwordMatch,
+            finalMatch: nameMatch && passwordMatch
           });
-          // Usar o nome completo (name) para login
-          return child.name === identifier && child.password === password;
+          
+          return nameMatch && passwordMatch;
         });
         
         console.log('Criança encontrada:', childFound);

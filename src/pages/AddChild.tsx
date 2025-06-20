@@ -35,9 +35,11 @@ const AddChild = () => {
         [field]: value
       };
       
-      // Gerar nome completo automaticamente
+      // Gerar nome completo automaticamente (remover espaços extras)
       if (field === "firstName" || field === "lastName") {
-        updated.fullName = `${updated.firstName} ${updated.lastName}`.trim();
+        const firstName = updated.firstName.trim();
+        const lastName = updated.lastName.trim();
+        updated.fullName = `${firstName} ${lastName}`.trim();
       }
       
       return updated;
@@ -106,11 +108,16 @@ const AddChild = () => {
     try {
       const age = calculateAge(childData.birthDate);
       
+      // Limpar espaços extras dos nomes
+      const firstName = childData.firstName.trim();
+      const lastName = childData.lastName.trim();
+      const fullName = `${firstName} ${lastName}`;
+      
       // Add child to context
       addChild({
-        name: childData.fullName,
-        firstName: childData.firstName,
-        lastName: childData.lastName,
+        name: fullName,
+        firstName: firstName,
+        lastName: lastName,
         age: age,
         ticketNumber: childData.ticketNumber,
         birthDate: childData.birthDate,
@@ -119,14 +126,19 @@ const AddChild = () => {
         parentId: user?.id || "parent1"
       });
       
-      console.log("Filho adicionado:", childData);
+      console.log("Filho adicionado:", {
+        name: fullName,
+        firstName: firstName,
+        lastName: lastName,
+        password: childData.password
+      });
       
       // Simular delay de API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
         title: "Filho adicionado com sucesso!",
-        description: `${childData.fullName} foi adicionado à sua conta.`,
+        description: `${fullName} foi adicionado à sua conta. Pode fazer login com "${firstName}" ou "${fullName}" e a senha definida.`,
       });
       
       navigate("/parent");
@@ -178,7 +190,7 @@ const AddChild = () => {
               </div>
               <CardTitle>Dados do Filho</CardTitle>
               <CardDescription>
-                Preencha as informações para criar a conta
+                Preencha as informações para criar a conta. O filho poderá fazer login com o primeiro nome ou nome completo.
               </CardDescription>
             </CardHeader>
             <CardContent>
