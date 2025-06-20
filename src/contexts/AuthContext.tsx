@@ -33,6 +33,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
   const login = async (identifier: string, password: string, userType: 'parent' | 'child', ticketNumber?: string): Promise<boolean> => {
+    console.log('Tentativa de login:', { identifier, password, userType });
+    
     if (identifier && password) {
       let userData: User;
       
@@ -41,12 +43,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const parentsData = localStorage.getItem('parents');
         const parents = parentsData ? JSON.parse(parentsData) : [];
         
+        console.log('Pais disponíveis:', parents);
+        
         // Procurar o pai pelo email e senha
         const parentFound = parents.find((parent: any) => 
           parent.email === identifier && parent.password === password
         );
         
         if (!parentFound) {
+          console.log('Pai não encontrado');
           return false; // Pai não cadastrado
         }
         
@@ -61,13 +66,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const childrenData = localStorage.getItem('children');
         const children = childrenData ? JSON.parse(childrenData) : [];
         
+        console.log('Crianças disponíveis:', children);
+        console.log('Procurando por:', { name: identifier, password: password });
+        
         // Procurar a criança pelo nome completo e senha
         const childFound = children.find((child: any) => {
+          console.log('Comparando com criança:', { 
+            childName: child.name, 
+            childPassword: child.password,
+            match: child.name === identifier && child.password === password
+          });
           // Usar o nome completo (name) para login
           return child.name === identifier && child.password === password;
         });
         
+        console.log('Criança encontrada:', childFound);
+        
         if (!childFound) {
+          console.log('Criança não encontrada com os dados fornecidos');
           return false; // Criança não cadastrada pelos pais
         }
         
@@ -78,6 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         };
       }
       
+      console.log('Login bem-sucedido:', userData);
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       return true;
